@@ -1,11 +1,12 @@
 <?php
 require_once 'config.php';
 
+
 // Обработка добавления записи
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book'])) {
     $stmt = $pdo->prepare("INSERT INTO bookings (client_id, trainer_id, hall_id, workout_id, booking_date, booking_time) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->execute([$_POST['client_id'], $_POST['trainer_id'], $_POST['hall_id'], $_POST['workout_id'], $_POST['booking_date'], $_POST['booking_time']]);
-    echo "<script>alert('Запись добавлена!');</script>";
+    header("Location: index.php");
 }
 
 // Получение списков для выпадающих меню
@@ -27,21 +28,23 @@ $bookings = $pdo->query("
 ?>
 
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
     <title>Фитнес-клуб - Управление тренировками</title>
-    <style>
-        body { font-family: Arial; margin: 20px; }
-        form { background: #f4f4f4; padding: 20px; border-radius: 5px; margin-bottom: 30px; }
-        select, input, button { margin: 5px; padding: 8px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #333; color: white; }
-        .form-group { display: inline-block; margin-right: 10px; }
-    </style>
+        <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <nav class="navbar">
+   <div class="container">
+       <h1><img width="50" height="50" src="https://img.icons8.com/ios/50/gum-.png" alt="gum-"/> GYMнастика</h1>
+       <p>Только у нас самые крутые тренера и тренеровки</p>
+       <a class="nav-link" href="view.clients.php">Список клиентов</a>
+   </div>
+</nav>
 
 <h2>📅 Запись на тренировку</h2>
 <form method="post">
@@ -94,14 +97,15 @@ $bookings = $pdo->query("
         <label>Время:</label>
         <input type="time" name="booking_time" required>
     </div>
+    
 
     <button type="submit" name="book">Записать</button>
+    <a href="#Добавить" class="btn btn-success">Добавление</a>
 </form>
 
 <h2>📋 Список записей</h2>
 <table>
-    <table>
-        <th>Клиент</th><th>Тренер</th><th>Зал</th><th>Тренировка</th><th>Дата</th><th>Время</th>
+        <th>Клиент</th><th>Тренер</th><th>Зал</th><th>Тренировка</th><th>Дата</th><th>Время</th><th>Действие</th>
     </tr>
     <?php foreach ($bookings as $booking): ?>
     <tr>
@@ -111,11 +115,14 @@ $bookings = $pdo->query("
         <td><?= htmlspecialchars($booking['workout_name']) ?></td>
         <td><?= $booking['booking_date'] ?></td>
         <td><?= $booking['booking_time'] ?></td>
+        <td><a href="delete.php?id=<?php echo $booking['id'] ?>" type="button" class="btn btn-danger">Отменить</a></td>
+
     </tr>
     <?php endforeach; ?>
 </table>
 
 <hr>
+<div id = "Добавить">
 <h3>➕ Быстрое добавление новых данных</h3>
 <form method="post">
     <input type="text" name="new_client" placeholder="Новый клиент">
@@ -125,25 +132,22 @@ $bookings = $pdo->query("
     <input type="text" name="new_halls" placeholder="Новый зал">
     <button type="submit" name="add_halls">Добавить зал</button>
 </form>
+</div>
 <?php
 if (isset($_POST['add_client']) && !empty($_POST['new_client'])) {
     $stmt = $pdo->prepare("INSERT INTO clients (name) VALUES (?)");
     $stmt->execute([$_POST['new_client']]);
-    echo "<p>Клиент добавлен. <a href=''>Обновить</a></p>";
+    header("Location: index.php");
 }
-?>
-<?php
 if (isset($_POST['add_trainer']) && !empty($_POST['new_trainer'])) {
     $stmt = $pdo->prepare("INSERT INTO trainers (name) VALUES (?)");
     $stmt->execute([$_POST['new_trainer']]);
-    echo "<p>Тренер добавлен. <a href=''>Обновить</a></p>";
+    header("Location: /");
 }
-?>
-<?php
 if (isset($_POST['add_halls']) && !empty($_POST['new_halls'])) {
     $stmt = $pdo->prepare("INSERT INTO halls (name) VALUES (?)");
     $stmt->execute([$_POST['new_halls']]);
-    echo "<p>Зал добавлен. <a href=''>Обновить</a></p>";
+    header("Location: /");
 }
 ?>
 </body>
